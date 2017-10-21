@@ -12,8 +12,9 @@ public:
     vector<Cell*> rotor;
 
     int id;
+    float px,py,diameter;
 
-    Cell(int _id) : id(_id) {;}
+    Cell(int _id,float _px,float _py,float _diameter) : id(_id),px(_px),py(_py),diameter(_diameter) {;}
 };
 
 #endif // CELL_H

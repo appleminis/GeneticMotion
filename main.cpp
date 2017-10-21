@@ -1,34 +1,26 @@
 #include <iostream>
 #include <cmath>
-#include <GL/glut.h>
-#include <GL/glu.h>
-#include <GL/gl.h>
 
 #include "cellmanager.h"
+#include "celldrawer.h"
 
 CellManager cellmanager;
 GeneticData *geneticdata;
 
+CellDrawer celldrawer;
+
 void renderScene() // this function is called when you need to redraw the scene
 {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // clear the scene
-
     glMatrixMode(GL_MODELVIEW); // enter in model view matrix
     glLoadIdentity(); // load the identity matrix, to reset transformations
-
     // set the observer
     // he's in position in (0,0,-10)
     // he's looking on (0,0,0)
     // he's in (0,1,0) direction
-    gluLookAt(0,0,-10, 0,0,0, 0,1,0);
+    gluLookAt(0,0,-500, 0,0,0, 0,1,0);
 
-    /*
-
-    NOW HERE YOU CAN DRAW WHAT YOU WANT! :)
-
-    */
-
-
+    celldrawer.draw(&cellmanager);
     // swap the buffer on the screen (real draw)
     glutSwapBuffers();
 }
@@ -44,7 +36,7 @@ void reshapeScene(int w, int h)
     // 2: the viewport ratio
     // 3: the minimum distance of view
     // 4: the maximum distance of view
-    gluPerspective(20, w*1.0f/h, 0.1f, 100);
+    gluPerspective(90, w*1.0f/h, 0.1f, 10000);
     glMatrixMode(GL_MODELVIEW); // revert to model view
 }
 
@@ -96,7 +88,15 @@ void reshapeScene(int w, int h)
 
 void init() // called to glEnable features or to init display lists
 {
+    // raw genetic code
+    vector<int8_t> rv={2,0,-10,25, 2,0,10,25, 2,0,0,50, 4,3, 2,1,0,75, 4,1, 1,5,-6, 0};
+
+    // asm genetic code
     geneticdata = new GeneticData();
+    // asm parser
+    cellmanager.geneticDataFromRawCode(geneticdata,rv);
+
+    // asm interpreter
     cellmanager.generateBody(geneticdata);
 
     glEnable(GL_DEPTH_TEST); // to enable when you draw in 3D
