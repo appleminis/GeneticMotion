@@ -4,9 +4,12 @@
 #include "cellmanager.h"
 #include "celldrawer.h"
 
+
+// example dvlpt genetic code
+vector<int8_t> rv={2,0,0,25, 3,1,1, 4,1, 2,0,-10,25, 2,0,10,25, 3,0,1, 3,0,2, 2,0,0,100, 3,1,3, 4,1, 3,2,2, 4,1, 3,2,1, 1,7,-11, 0};
+
 CellManager cellmanager;
 GeneticData *geneticdata;
-
 CellDrawer celldrawer;
 
 void renderScene() // this function is called when you need to redraw the scene
@@ -88,10 +91,6 @@ void reshapeScene(int w, int h)
 
 void init() // called to glEnable features or to init display lists
 {
-    // raw genetic code
-    vector<int8_t> rv={2,0,-10,25, 2,0,10,25, 2,0,0,50, 4,3, 2,1,0,75, 4,1, 1,5,-6, 0};
-
-    // asm genetic code
     geneticdata = new GeneticData();
     // asm parser
     cellmanager.geneticDataFromRawCode(geneticdata,rv);

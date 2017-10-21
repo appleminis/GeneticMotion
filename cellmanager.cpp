@@ -2,7 +2,7 @@
 
 CellManager::CellManager() : GeneticLowlevelGrammar()
 {
-    initLLcmdsz ();
+    initLLcmds ();
     cmdnm.push_back("cellgen  ");
     cmdsz.push_back(3);
     cmdnm.push_back("celllink ");
@@ -17,26 +17,32 @@ CellManager::CellManager() : GeneticLowlevelGrammar()
 
 void CellManager::makeLink(int idcell, int mld1, int mld2)
 {
+
+    if (mld2<0) return;
+    if (mld2>=nodes.size()) return;
+
+
     switch (mld1)
     {
         case 0:
         {
-            nodes[idcell]->stator.push_back( nodes[mld2] );
+            nodes[idcell]->stator.push_back(new LinkCell(nodes[mld2],mld1) );
 
         } break;
 
         case 1:
         {
-            nodes[idcell]->rotor.push_back( nodes[mld2] );
+            nodes[idcell]->rotor.push_back(new LinkCell(nodes[mld2],mld1) );
 
         } break;
 
-        /*case 2:
+        case 2:
         {
+            nodes[idcell]->rotor.push_back(new LinkCell(nodes[mld2],mld1) );
 
         } break;
 
-        case 3:
+        /*case 3:
         {
 
         } break;*/
@@ -61,7 +67,7 @@ int CellManager::TranslateHLCode(GeneticBase *gb, int idcell)
             float dia = gb->data[3]+ad+12;
             Cell *nc=new Cell(nodes.size(),apx+cos(ang)*(dia),apy+sin(ang)*(dia),12);
             nodes.push_back(nc);
-            makeLink(idcell,gb->data[1],nodes.size()-1);
+            //makeLink(idcell,gb->data[1],nodes.size()-1);
             return 0;
         }
         break;
@@ -69,7 +75,7 @@ int CellManager::TranslateHLCode(GeneticBase *gb, int idcell)
         case 3://generate new link from active cell to cell (uint)*(data+2)
         {
 
-            makeLink(idcell,gb->data[1],gb->data[2]);
+            makeLink(idcell,gb->data[1],idcell+gb->data[2]);
             return 0;
         }
         break;

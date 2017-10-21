@@ -32,9 +32,38 @@ public:
 
     }
 
+    void drawQuiver (Cell *c, Cell *d, float c1, float c2, float c3)
+    {
+        float px=d->px - c->px;
+        float py=d->py - c->py;
+        float pd=sqrt(px*px+py*py);
+        px/=pd/c1;
+        py/=pd/c1;
+
+        glBegin(GL_LINES);
+
+        glVertex3f(c->px,c->py,0.0f);
+        glVertex3f(d->px-px*(2),d->py-py*(2),0.0f);
+
+
+
+        glVertex3f(d->px-px,d->py-py,0.0f);        glVertex3f(d->px+py*c3-px*c2,d->py-px*c3-py*c2,0.0f);
+
+        glVertex3f(d->px-px,d->py-py,0.0f);        glVertex3f(d->px-py*c3-px*c2,d->py+px*c3-py*c2,0.0f);
+
+
+        glVertex3f(d->px+py*c3-px*c2,d->py-px*c3-py*c2,0.0f);
+        glVertex3f(d->px-py*c3-px*c2,d->py+px*c3-py*c2,0.0f);
+
+        glEnd();
+
+
+    }
+
     void draw(CellManager *cm)
     {
         int i,j;
+        float px,py,pd;
         Cell *c;
         for (i=0; i<cm->nodes.size(); i++)
         {
@@ -45,33 +74,23 @@ public:
             glBegin(GL_LINES);
             for (j=0; j<c->stator.size(); j++)
             {
-                glVertex3f(c->px,c->py,0.0f);
-                glVertex3f(c->stator[j]->px,c->stator[j]->py,0.0f);
+                drawQuiver(c,c->stator[j]->c,4,2,2);
+
             }
             glEnd();
 
-            glColor3f(1.0f,0.0f,0.0f);
-            glBegin(GL_LINES);
             for (j=0; j<c->rotor.size(); j++)
             {
-                glVertex3f(c->px,c->py,0.0f);
-                glVertex3f(c->rotor[j]->px,c->rotor[j]->py,0.0f);
+                if (c->rotor[j]->typ==1)
+                    glColor3f(0.2f,0.7f,0.7f);
+                else
+                    glColor3f(0.8f,0.2f,0.2f);
+
+
+                drawQuiver(c,c->rotor[j]->c,12,2,1);
+
             }
-            glEnd();
         }
-
-
-
-        /*int i;
-        for (i=0; i<cell->stator.size(); i++)
-        {
-            draw(cm->cell->stator[i]);
-        }
-
-        for (i=0; i<cell->rotor.size(); i++)
-        {
-            draw(cell->rotor[i]);
-        }*/
     }
 
     CellDrawer();
