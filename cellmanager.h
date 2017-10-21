@@ -8,14 +8,15 @@ class CellManager : public GeneticLowlevelGrammar
 {
 public:
 
-    vector<Cell> nodes;
+    vector<Cell*> nodes;
 
     CellManager();
 
-    int TranslateHLCode(GeneticBase *gb, int pos);
+    int TranslateHLCode(GeneticBase *gb, int *idcell);
 
 
-    int generateBody (GeneticData cg);
+    int makeLink(int idcell, int mld1, int mld2);
+    int generateBody (GeneticData *cg);
 };
 
 #endif // CELLMANAGER_H

@@ -7,7 +7,7 @@
 #include <stddef.h>
 using namespace std;
 
-#define NCMD 4
+#define NCMD 5
 
 class GeneticBase
 {
@@ -23,7 +23,7 @@ class GeneticData
 {
 public:
 
-    deque<GeneticBase> data;
+    deque<GeneticBase*> data;
 
     GeneticData();
 
@@ -37,7 +37,7 @@ public :
     {
     }
 
-    int TranslateLLCode(GeneticBase *gb, int pos)
+    int TranslateLLCode(GeneticBase *gb, int idcmd)
     {
         switch (gb->data[0])
         {
@@ -49,8 +49,8 @@ public :
 
             case 1://test and branch instruction
             {
-                if (pos<*(gb->data+1))
-                    return *(gb->data+2);
+                if (idcmd<*(gb->data+1))
+                    return idcmd+*(gb->data+2);
                 else
                     return 1;
             }

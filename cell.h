@@ -8,12 +8,12 @@ class Cell
 {
 public:
 
-    vector<LinkCell> stator;
-    vector<LinkCell> rotor;
+    vector<Cell*> stator;
+    vector<Cell*> rotor;
 
+    int id;
 
-
-    Cell();
+    Cell(int _id) : id(_id) {;}
 };
 
 #endif // CELL_H
