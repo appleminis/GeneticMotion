@@ -4,7 +4,9 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 
+#include "cellmanager.h"
 
+CellManager cellmanager;
 
 void renderScene() // this function is called when you need to redraw the scene
 {
@@ -93,6 +95,11 @@ void reshapeScene(int w, int h)
 
 void init() // called to glEnable features or to init display lists
 {
+
+    cellmanager.generateBody(GeneticData());
+
+
+
     glEnable(GL_DEPTH_TEST); // to enable when you draw in 3D
 }
 

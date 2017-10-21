@@ -6,7 +6,7 @@ set(LIBS)
 
 add_definitions(-std=c++11)
 add_definitions(-D_USE_MATH_DEFINES)    # Use math definitions (M_PI, etc...)
-add_definitions(-Wall -Wextra -Werror)  # Display all warnings, mark warnings as error
+add_definitions(-O3 -W -Wall -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long$(THREADSCXXFLAGS))  # Display all warnings, mark warnings as error
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)
