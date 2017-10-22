@@ -38,7 +38,7 @@ void CellManager::makeLink(int idcell, int mld1, int mld2, int mld3, int mld4)
 
         case 2:
         {
-            nodes[idcell]->rotor.push_back(new LinkCell(nodes[mld2],mld1,mld3*2,mld4) );
+            nodes[mld2]->rotor.push_back(new LinkCell(nodes[idcell],mld1,mld3*2,mld4) );
 
         } break;
 
@@ -67,7 +67,7 @@ int CellManager::TranslateHLCode(GeneticBase *gb, int idcell)
             float apy=nodes[idcell]->py;
             float ad=nodes[idcell]->diameter;
             float dia = (gb->data[1]+ad)*1.5;
-            ang+=0.1;
+            ang+=0.01;
             Cell *nc=new Cell(nodes.size(),apx+cos(ang)*dia,apy+sin(ang)*dia,gb->data[1]);
             nodes.push_back(nc);
             return 0;
@@ -131,7 +131,7 @@ int CellManager::generateBody(GeneticData *cg)
 
     deque<GeneticBase*>::iterator it = cg->data.begin();
 
-    int ilim=0,limitinstruction=256;
+    int ilim=0,limitinstruction=1024;
     while (mvcmd<255 && ilim++<limitinstruction)
     {
         it+=mvcmd;
@@ -142,7 +142,7 @@ int CellManager::generateBody(GeneticData *cg)
         idcell+=mvcell;
 
         printf ("%i %s mvcmd %i mvcell %i\n", ilim, cmdnm[gb->data[0]], mvcmd,mvcell);
-        //if (mvcmd!=1)for (int i=0; i<100; i++) dynamicCompute(0.01,0.0001);
+        if (mvcmd!=1)for (int i=0; i<1000; i++) dynamicCompute(0.25,0.05);
 
     }
 
@@ -166,12 +166,12 @@ void CellManager::forceCompute(Cell *tree, LinkCell *lc, float dt)
         dsd2=dsx*dsx+dsy*dsy;   dsd=sqrt(dsd2);
 
 
-        spring = (lc->cl - dsd)/4;
+        spring = (lc->cl - dsd)/2;
         if (lc->typ==2) spring/=4;
 
         //spring = spring<0 ? -spring*spring : spring*spring;
 
-        if (fabs(spring)>2) spring=spring<0 ? -2 : 2;
+        //if (fabs(spring)>2) spring=spring<0 ? -2 : 2;
 
         tree->vx+=spring*dsx/dsd*dt/tree->mass;
         tree->vy+=spring*dsy/dsd*dt/tree->mass;
@@ -181,7 +181,7 @@ void CellManager::forceCompute(Cell *tree, LinkCell *lc, float dt)
 
         if (lc->typ<2)
         {
-            springtan = -(atan2(dsy,dsx)*180/M_PI-lc->phi)/8;
+            springtan = -(atan2(dsy,dsx)*180/M_PI-lc->phi)/2;
             if (lc->typ==1) springtan/=64;
 
             springtan = springtan<0 ? -springtan*springtan : springtan*springtan;

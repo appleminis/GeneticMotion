@@ -6,7 +6,7 @@
 
 
 // example dvlpt genetic code
-vector<int8_t> rv={ 2,8,  2,8,  3,0,1,35,-35,  3,0,2,35,35,  2,10,  3,1,3,40,0, 2,12,  4,1,  3,2,-4,55,0,  4,1,  3,2,-4,55,0, 4,1,  3,0,1,12,0,  4,1,  1,36,-14,  0};
+vector<int8_t> rv={ 2,8,  2,8,  3,0,1,35,-35,  3,0,2,35,35,  2,10,  3,1,3,55-0,0, 2,12,  4,1,  3,2,-4,70,0,  4,1,  3,2,-4,70,0, 4,1,  3,0,1,15,0,  4,1,  1,127,-14,  0};
 
 CellManager cellmanager;
 GeneticData *geneticdata;
@@ -17,8 +17,8 @@ void renderScene() // this function is called when you need to redraw the scene
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // clear the scene
     glMatrixMode(GL_MODELVIEW); // enter in model view matrix
     glLoadIdentity(); // load the identity matrix, to reset transformations
-    gluLookAt(0,0,-500, 0,0,0, 0,1,0);
-    for (int i=0; i<20; i++) cellmanager.dynamicCompute(0.1,0.00125);
+    gluLookAt(0,0,-2000, 0,0,0, 0,1,0);
+    for (int i=0; i<100; i++) cellmanager.dynamicCompute(0.25,0.0025);
     celldrawer.draw(&cellmanager,1);
     glutSwapBuffers();
 }
