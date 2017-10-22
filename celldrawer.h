@@ -46,7 +46,6 @@ public:
         glVertex3f(d->px-px*(2),d->py-py*(2),0.0f);
 
 
-
         glVertex3f(d->px-px,d->py-py,0.0f);        glVertex3f(d->px+py*c3-px*c2,d->py-px*c3-py*c2,0.0f);
 
         glVertex3f(d->px-px,d->py-py,0.0f);        glVertex3f(d->px-py*c3-px*c2,d->py+px*c3-py*c2,0.0f);
@@ -60,11 +59,29 @@ public:
 
     }
 
-    void draw(CellManager *cm)
+    void draw(CellManager *cm, int cgf)
     {
         int i,j;
         float px,py,pd;
+        float cgx=0,cgy=0,sm=0;
         Cell *c;
+
+        glPushMatrix();
+        if (cgf)
+        {
+            for (i=0; i<cm->nodes.size(); i++)
+            {
+                c = cm->nodes[i];
+                cgx+=c->px*c->mass;
+                cgy+=c->py*c->mass;
+                sm+=c->mass;
+            }
+            cgx/=sm;
+            cgy/=sm;
+            glTranslatef(-cgx,-cgy,0);
+        }
+
+
         for (i=0; i<cm->nodes.size(); i++)
         {
             c = cm->nodes[i];
@@ -91,9 +108,10 @@ public:
 
             }
         }
+        glPopMatrix();
     }
 
-    CellDrawer();
+    CellDrawer() {}
 };
 
 #endif // CELLDRAWER_H

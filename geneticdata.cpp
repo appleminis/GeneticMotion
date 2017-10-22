@@ -13,6 +13,9 @@ void GeneticLowlevelGrammar::initLLcmds ()
     cmdnm.push_back("cmdifmv  ");
     cmdsz.push_back(2);
 
+  //cmdnm.push_back("cmdfork  ");
+
+
 }
 
 int GeneticLowlevelGrammar::TranslateLLCode(GeneticBase *gb, int idcmd, int idcell)
