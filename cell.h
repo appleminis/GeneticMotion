@@ -18,18 +18,29 @@ public:
     LinkCell(Cell *_c, int _typ, float _cl, float _phi) :c(_c),typ(_typ),cl(_cl),phi(_phi) {l=cl;dl=dphi=0;}
 };
 
+class LinkCellInv
+{
+public :
+    Cell *c;
+    LinkCell *lc;
+
+    LinkCellInv(Cell *_c, LinkCell *_lc) : c(_c),lc(_lc) {}
+};
+
+
 class Cell
 {
 public:
 
     int id;
 
-    vector<LinkCell*> stator;
-    vector<LinkCell*> rotor;
+    vector<LinkCell*> links;
+    vector<LinkCellInv> invLinks;
 
-    float px,py,vx,vy,diameter,mass; //dynamic parameters
+    float px,py,vx,vy,phi,dphi,diameter,mass; //dynamic parameters
+    float fx,fy,fn,cpl;    //result of the forces
 
-    Cell(int _id,float _px,float _py,float _diameter) : id(_id),px(_px),py(_py),diameter(_diameter) {vx=vy=0;mass=diameter*diameter;}
+    Cell(int _id,float _px,float _py,float _diameter) : id(_id),px(_px),py(_py),diameter(_diameter) {vx=vy=phi=dphi=0;mass=diameter*diameter;}
 };
 
 #endif // CELL_H

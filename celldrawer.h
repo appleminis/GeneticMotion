@@ -30,6 +30,22 @@ public:
         }
         glEnd();
 
+        float rx=cos(cell->phi)*cell->diameter;
+        float ry=sin(cell->phi)*cell->diameter;
+
+        glColor3f(1.0f,1.0f,1.0f);
+        glBegin(GL_LINES);
+        glVertex3f(cell->px,cell->py,0);
+        glVertex3f(cell->px+rx,cell->py+ry,0);
+        glVertex3f(cell->px,cell->py,0);
+        glVertex3f(cell->px-ry,cell->py+rx,0);
+        glVertex3f(cell->px,cell->py,0);
+        glVertex3f(cell->px-rx,cell->py-ry,0);
+        glVertex3f(cell->px,cell->py,0);
+        glVertex3f(cell->px+ry,cell->py-rx,0);
+        glEnd();
+
+
     }
 
     void drawQuiver (Cell *c, Cell *d, float c1, float c2, float c3)
@@ -87,24 +103,23 @@ public:
             c = cm->nodes[i];
             drawCell(c);
 
-            glColor3f(1.0f,1.0f,1.0f);
-            glBegin(GL_LINES);
-            for (j=0; j<c->stator.size(); j++)
+            for (j=0; j<c->links.size(); j++)
             {
-                drawQuiver(c,c->stator[j]->c,4,2,2);
-
-            }
-            glEnd();
-
-            for (j=0; j<c->rotor.size(); j++)
-            {
-                if (c->rotor[j]->typ==1)
+                switch (c->links[j]->typ) {
+                case 0:
+                    glColor3f(1.0f,1.0f,1.0f);
+                    break;
+                case 1:
                     glColor3f(0.2f,0.7f,0.7f);
-                else
+                    break;
+                case 2:
                     glColor3f(0.8f,0.2f,0.2f);
+                    break;
+                default:
+                    break;
+                }
 
-
-                drawQuiver(c,c->rotor[j]->c,12,2,1);
+                drawQuiver(c,c->links[j]->c,12,2,1);
 
             }
         }

@@ -26,20 +26,22 @@ void CellManager::makeLink(int idcell, int mld1, int mld2, int mld3, int mld4)
     {
         case 0:
         {
-            nodes[idcell]->stator.push_back(new LinkCell(nodes[mld2],mld1,mld3*2,mld4) );
+            nodes[idcell]->links.push_back(new LinkCell(nodes[mld2],mld1,mld3*2,mld4) );
+            nodes[mld2]->invLinks.push_back(LinkCellInv(nodes[idcell],nodes[idcell]->links.back()));
 
         } break;
 
         case 1:
         {
-            nodes[idcell]->rotor.push_back(new LinkCell(nodes[mld2],mld1,mld3*2,mld4) );
+            nodes[idcell]->links.push_back(new LinkCell(nodes[mld2],mld1,mld3*2,mld4) );
+            nodes[mld2]->invLinks.push_back(LinkCellInv(nodes[idcell],nodes[idcell]->links.back()));
 
         } break;
 
         case 2:
         {
-            nodes[mld2]->rotor.push_back(new LinkCell(nodes[idcell],mld1,mld3*2,mld4) );
-
+            nodes[mld2]->links.push_back(new LinkCell(nodes[idcell],mld1,mld3*2,mld4) );
+            nodes[idcell]->invLinks.push_back(LinkCellInv(nodes[mld2],nodes[mld2]->links.back()));
         } break;
 
         /*case 3:
@@ -67,7 +69,7 @@ int CellManager::TranslateHLCode(GeneticBase *gb, int idcell)
             float apy=nodes[idcell]->py;
             float ad=nodes[idcell]->diameter;
             float dia = (gb->data[1]+ad)*1.5;
-            ang+=0.01;
+            ang+=0.025*0;
             Cell *nc=new Cell(nodes.size(),apx+cos(ang)*dia,apy+sin(ang)*dia,gb->data[1]);
             nodes.push_back(nc);
             return 0;
@@ -125,13 +127,13 @@ int CellManager::generateBody(GeneticData *cg)
 {
     printf ("\nexecute development code\n\n");
 
-    int idcmd=0,mvcmd=0,mvcell;
-    int idcell=0;
+    static int idcmd=0,mvcmd=0,mvcell;
+    static int idcell=0;
     GeneticBase *gb=NULL;
 
-    deque<GeneticBase*>::iterator it = cg->data.begin();
+    static deque<GeneticBase*>::iterator it = cg->data.begin();
 
-    int ilim=0,limitinstruction=1024;
+    static int ilim=0,limitinstruction=1024;
     while (mvcmd<255 && ilim++<limitinstruction)
     {
         it+=mvcmd;
@@ -142,8 +144,7 @@ int CellManager::generateBody(GeneticData *cg)
         idcell+=mvcell;
 
         printf ("%i %s mvcmd %i mvcell %i\n", ilim, cmdnm[gb->data[0]], mvcmd,mvcell);
-        if (mvcmd!=1)for (int i=0; i<1000; i++) dynamicCompute(0.25,0.05);
-
+        if (mvcmd!=1) break;
     }
 
     return 1;
@@ -167,52 +168,112 @@ void CellManager::forceCompute(Cell *tree, LinkCell *lc, float dt)
 
 
         spring = (lc->cl - dsd)/2;
-        if (lc->typ==2) spring/=4;
+        if (lc->typ==2) spring/=16;
 
         //spring = spring<0 ? -spring*spring : spring*spring;
-
         //if (fabs(spring)>2) spring=spring<0 ? -2 : 2;
 
-        tree->vx+=spring*dsx/dsd*dt/tree->mass;
-        tree->vy+=spring*dsy/dsd*dt/tree->mass;
+        tree->fx+=spring*dsx/dsd*dt/tree->mass;
+        tree->fy+=spring*dsy/dsd*dt/tree->mass;
 
-        lc->c->vx+=-spring*dsx/dsd*dt/lc->c->mass;
-        lc->c->vy+=-spring*dsy/dsd*dt/lc->c->mass;
+        lc->c->fx+=-spring*dsx/dsd*dt/lc->c->mass;
+        lc->c->fy+=-spring*dsy/dsd*dt/lc->c->mass;
 
-        if (lc->typ<2)
+        if (lc->typ==0)
         {
-            springtan = -(atan2(dsy,dsx)*180/M_PI-lc->phi)/2;
-            if (lc->typ==1) springtan/=64;
-
-            springtan = springtan<0 ? -springtan*springtan : springtan*springtan;
-
-            if (fabs(springtan)>1) springtan=springtan<0 ? -1 : 1;
 
 
-            tree->vx+=-springtan*dsy/dsd*dt/tree->mass;
-            tree->vy+=springtan*dsx/dsd*dt/tree->mass;
+            springtan = -(atan2(dsy,dsx)-lc->phi/80-(-tree->phi+0*lc->c->phi))/20;
 
-            lc->c->vx+=springtan*dsy/dsd*dt/lc->c->mass;
-            lc->c->vy+=-springtan*dsx/dsd*dt/lc->c->mass;
+            /*springtan = springtan<0 ? -springtan*springtan : springtan*springtan;
+            if (fabs(springtan)>1) springtan=springtan<0 ? -1 : 1;*/
+
+            tree->fx+=-springtan*dsy/dsd*dt/tree->mass;
+            tree->fy+=springtan*dsx/dsd*dt/tree->mass;
+
+            lc->c->fx+=springtan*dsy/dsd*dt/lc->c->mass;
+            lc->c->fy+=-springtan*dsx/dsd*dt/lc->c->mass;
         }
     }
 }
 
 int CellManager::dynamicCompute(float dt, float f)
 {
-    dynamicComputeRec(nodes[0],dt);
-    float fv;
-    f*=dt;
-    Cell *c;
+    //result of forces initialisation
+    Cell *c,*d;
+    LinkCell *lc;
+    LinkCellInv *ilc;
+    float dist,ux,uy;
     for (int i=0; i<nodes.size(); i++)
     {
         c=nodes[i];
+        c->fx=0;
+        c->fy=0;
+        c->cpl=0;
+        //c->fn=0;
+    }
+
+    //result of force recursive computation
+    dynamicComputeRec(nodes[0],dt);
+
+    //result of torque computation
+    for (int i=0; i<nodes.size(); i++)
+    {
+        c=nodes[i];
+
+        for (int j=0; j<c->links.size(); j++)
+        {
+            lc = c->links[j];
+            if (lc->typ==0)
+            {
+            d=lc->c;
+
+            ux=d->px-c->px;
+            uy=d->py-c->py;
+
+            c->cpl+=d->fx*uy-d->fy*ux;
+            }
+        }
+        for (int j=0; j<c->invLinks.size(); j++)
+        {
+            ilc=&c->invLinks[j];
+            lc=ilc->lc;
+            if (lc->typ==0)
+            {
+            d=ilc->c;
+
+            ux=d->px-c->px;
+            uy=d->py-c->py;
+
+            c->cpl+=d->fx*uy-d->fy*ux;
+            }
+        }
+    }
+
+    //update velocity and torque
+    float fv;
+    f*=dt;
+    for (int i=0; i<nodes.size(); i++)
+    {
+        c=nodes[i];
+
+        c->vx+=c->fx;
+        c->vy+=c->fy;
+
         fv = sqrt(c->vx*c->vx+c->vy*c->vy)*f;
         c->vx-=c->vx*fv;c->vy-=c->vy*fv;
-
         c->px+=c->vx*dt;
         c->py+=c->vy*dt;
+
+        c->dphi+=c->cpl/c->mass/10;
+        c->phi+=d->dphi*dt;
+        if (c->phi>M_PI)
+            c->phi-=M_PI;
+        if (c->phi<-M_PI)
+            c->phi+=M_PI;
     }
+
+
 }
 
 
@@ -225,17 +286,16 @@ int CellManager::dynamicComputeRec(Cell *tree, float dt)
     LinkCell *lc;
     psx=tree->px;
     psy=tree->py;
-    for (j=0; j<tree->stator.size(); j++)
+    for (j=0; j<tree->links.size(); j++)
     {
-        lc = tree->stator[j];
+        lc = tree->links[j];
         forceCompute(tree, lc, dt);
-        dynamicComputeRec(tree->stator[j]->c,dt);
-    }
 
-    for (j=0; j<tree->rotor.size(); j++)
-    {
-        lc = tree->rotor[j];
-        forceCompute(tree, lc, dt);
-        dynamicComputeRec(tree->rotor[j]->c,dt);
+        //if (tree->ok) //shit multiple pass.. use monte carlo mecanic... or heap of computecell order by magnitude of pertubation...
+        if (lc->typ<2) //ok :) constraint skeleton to be a tree use grow and fork for develelopment
+        {
+            dynamicComputeRec(tree->links[j]->c,dt);
+            //tree->ok=0;
+        }
     }
 }
